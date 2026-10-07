@@ -60,3 +60,7 @@ Boost replaces these bootstrap instructions with guidelines tailored to the appl
 - 確かめるときは、php artisan の route:list・db:table・migrate:status と php -l を使う。テストのファイルを書いたり、php -r・その場で書いた PHP・sqlite3 で動かしたりしない
 - サーバー（php artisan serve）は学習者が別のターミナルで動かしている。起動も停止もしない
 - この作業部屋は Codespaces のポート転送で開いている。リダイレクトの住所が正しくなるよう、bootstrap/app.php の withMiddleware に `$middleware->trustProxies(at: '*');` を入れる
+
+## 見た目の決まり
+
+- アプリの名前は『ゆいのへや』。ボタンと自分の吹き出しの色は『青』にそろえる

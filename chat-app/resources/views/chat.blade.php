@@ -11,7 +11,7 @@
 
     <header class="bg-white px-4 py-3 flex items-center justify-between shadow-sm">
       <a href="/rooms" class="text-sm text-gray-500">← 一覧</a>
-      <h1 class="font-bold">{{ $room->name }}</h1>
+      <h1 class="font-bold">{{ $room->name }}（{{ count($messages) }}）</h1>
       <a href="/enter" class="text-sm text-gray-500">{{ session('nickname') }}</a>
     </header>
 
