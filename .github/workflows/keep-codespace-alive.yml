@@ -1,7 +1,7 @@
 name: Keep Codespace alive
 
 # Codespace は一定期間使われないと削除される。
-# 定期的に起動して「使用中」の状態にし、削除を防ぐ。
+# 定期的に API で起動して「使用中」の状態にし、削除を防ぐ。
 on:
   schedule:
     - cron: "17 3 * * 1"   # 毎週月曜 03:17 UTC
@@ -13,17 +13,19 @@ jobs:
     steps:
       - name: Start codespaces for this repository
         env:
-          # codespace スコープ付き PAT を Secret に登録（名前: CODESPACES_PAT）
           GH_TOKEN: ${{ secrets.CODESPACES_PAT }}
         run: |
           set -euo pipefail
           if [ -z "${GH_TOKEN:-}" ]; then
             echo "::error::Secret CODESPACES_PAT is not set"; exit 1
           fi
-          names=$(gh codespace list --repo "$GITHUB_REPOSITORY" --json name -q '.[].name')
-          [ -n "$names" ] || { echo "No codespaces found"; exit 0; }
+          gh api user -q '"Authenticated as " + .login'
+          names=$(gh api "/repos/${GITHUB_REPOSITORY}/codespaces" --paginate -q '.codespaces[].name' 2>/dev/null || true)
+          if [ -z "$names" ]; then
+            names=$(gh api /user/codespaces --paginate -q ".codespaces[] | select(.repository.full_name==\"${GITHUB_REPOSITORY}\") | .name")
+          fi
+          [ -n "$names" ] || { echo "No codespaces found for ${GITHUB_REPOSITORY}"; exit 0; }
           for n in $names; do
-            echo "Touching $n"
-            # SSH でコマンドを実行すると起動し、最終使用時刻が更新される
-            gh codespace ssh -c "$n" -- "echo alive: \$(date -u)"
+            echo "Starting $n"
+            gh api -X POST "/user/codespaces/$n/start" -q '"state: " + .state'
           done
